@@ -1,0 +1,129 @@
+
+# RP To-Do CLI
+
+`ssutxos` is a Python command-line interface (CLI) tool for interacting with Liquid wallets. 
+It allows users to list UTXOs (unspent transaction outputs) for a wallet derived from a BIP39 mnemonic and optionally save them in JSON format.
+
+
+## Features
+
+* Display the version of the CLI.
+* List Liquid UTXOs for a wallet from a mnemonic.
+* Support for both `mainnet` and `testnet` Liquid networks.
+* Save UTXOs as a JSON file for further processing.
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/devridge0/ssutxos.git
+cd ssutxos
+python -m venv lwk-venv
+source lwk-venv/bin/activate
+
+pip install .
+```
+
+Ensure that dependencies are installed (`typer`, `lwk`, etc.):
+
+```bash
+pip install typer lwk
+```
+
+---
+
+## Usage
+
+### Show Version
+
+```bash
+ssutxos --version
+```
+
+Output example:
+
+```
+ssutxos v1.0.0
+```
+
+### List UTXOs
+
+```bash
+ssutxos list --mnemonic "your twelve or twenty-four word mnemonic" --network mainnet
+```
+
+#### Options
+
+| Option               | Description                            | Default |
+| -------------------- | -------------------------------------- | ------- |
+| `--mnemonic` / `-mn` | BIP39 mnemonic (12 or 24 words)        | None    |
+| `--network`          | Liquid network: `mainnet` or `testnet` | mainnet |
+
+#### Example
+
+```bash
+ssutxos list --mnemonic "abandon abandon abandon ..." --network testnet
+```
+
+This will output UTXOs in a JSON format like:
+
+```json
+[
+  {
+    "txid": "abc123...",
+    "vout": 0,
+    "asset": "L-BTC",
+    "amount": 0.1234,
+    "address": "ex1q..."
+  }
+]
+```
+
+Additionally, it saves the UTXOs to a file named `utxos.json`.
+
+---
+
+## JSON Output
+
+The CLI saves the list of UTXOs in a file `utxos.json` in the current working directory. Each UTXO contains:
+
+* `txid`: Transaction ID
+* `vout`: Output index
+* `asset`: Asset type (currently only `L-BTC` handled)
+* `amount`: Amount in L-BTC
+* `address`: Receiving address
+
+---
+
+## Code Structure
+
+* `ssutxos/cli.py` – Main CLI module.
+* `list_utxos` – Command to list UTXOs.
+* `save_json` – Helper function to save UTXOs to JSON.
+
+---
+
+## Development
+
+To run the CLI locally:
+
+```bash
+python -m ssutxos list --mnemonic "your mnemonic" --network testnet
+```
+
+---
+
+## Notes
+
+* Ensure you have a working connection to a Liquid Electrum server.
+* Currently, only L-BTC (Liquid Bitcoin) UTXOs are supported for balance calculation.
+* Mnemonic is required for listing UTXOs; no wallet file support yet.
+
+---
+
+## License
+
+MIT License © 2025
+
+---

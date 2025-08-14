@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssutxos"
+version = "0.1.0"
+description = "A CLI tool to inspect SideSwap UTXOs"
+authors = [{ name = "Lucky", email = "lucky.bear.dev@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.31",
+    # add other dependencies here
+]
+
+[project.scripts]
+ssutxos = "ssutxos.cli:main"
