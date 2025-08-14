@@ -1,5 +1,5 @@
 
-# RP To-Do CLI
+# A CLI tool to inspect SideSwap UTXOs
 
 `ssutxos` is a Python command-line interface (CLI) tool for interacting with Liquid wallets. 
 It allows users to list UTXOs (unspent transaction outputs) for a wallet derived from a BIP39 mnemonic and optionally save them in JSON format.
@@ -21,14 +21,9 @@ git clone https://github.com/devridge0/ssutxos.git
 cd ssutxos
 python -m venv lwk-venv
 source lwk-venv/bin/activate
+pip install -r requirements.txt
 
 pip install .
-```
-
-Ensure that dependencies are installed (`typer`, `lwk`, etc.):
-
-```bash
-pip install typer lwk
 ```
 
 ---
