@@ -1,20 +1,27 @@
 
 # A CLI tool to inspect SideSwap UTXOs
 
-`ssutxos` is a Python command-line interface (CLI) tool for interacting with Liquid wallets. 
-It allows users to list UTXOs (unspent transaction outputs) for a wallet derived from a BIP39 mnemonic and optionally save them in JSON format.
+`ssutxos` is a Python command-line interface (CLI) tool for inspecting and tracing **Liquid Network UTXOs** (both unspent and spent).  
+It is designed for research, wallet analysis, and graph exploration across snapshots of wallet states.
 
+---
 
 ## Features
 
-* Display the version of the CLI.
-* List Liquid UTXOs for a wallet from a mnemonic.
-* Support for both `mainnet` and `testnet` Liquid networks.
-* Save UTXOs as a JSON file for further processing.
+- **List** UTXOs (spent + unspent) for a wallet derived from a **BIP39 mnemonic** using **LWK** (Liquid Wallet Kit).  
+  - If LWK does not expose spent state, `ssutxos` consults **Esplora** to determine whether outputs are spent.  
+  - Produces a standardized **schema v2 JSON snapshot** (`ssutxos-2`).
+- **Compare** two snapshot files by traversing the **transaction graph outward indefinitely**, hop by hop, until interrupted.  
+  - Reports when UTXOs from one snapshot are connected to UTXOs in the other.  
+  - Uses **Esplora API** for fetching transactions and spends.  
+  - Supports configurable API throttling (`--delay-ms`) to respect rate limits.
+- Built with **Typer** for a clean, modern CLI.
 
 ---
 
 ## Installation
+
+Clone the repo and install locally:
 
 ```bash
 git clone https://github.com/devridge0/ssutxos.git
@@ -22,8 +29,13 @@ cd ssutxos
 python -m venv lwk-venv
 source lwk-venv/bin/activate
 pip install -r requirements.txt
-
 pip install .
+````
+
+Or install from the built wheel:
+
+```bash
+pip install dist/ssutxos-0.1.0-py3-none-any.whl
 ```
 
 ---
@@ -36,84 +48,123 @@ pip install .
 ssutxos --version
 ```
 
-Output example:
-
-```
-ssutxos v1.0.0
-```
-
 ### List UTXOs
 
 ```bash
-ssutxos list --mnemonic "your twelve or twenty-four word mnemonic" --network mainnet
+ssutxos list --mnemonic "your twelve or twenty-four word mnemonic" \
+             --network liquidv1 \
+             --out my_utxos.json \
+             --esplora https://blockstream.info/liquid/api \
+             --delay-ms 120
 ```
 
-#### Options
+**Options**
 
-| Option               | Description                            | Default |
-| -------------------- | -------------------------------------- | ------- |
-| `--mnemonic` / `-mn` | BIP39 mnemonic (12 or 24 words)        | None    |
-| `--network`          | Liquid network: `mainnet` or `testnet` | mainnet |
+| Option         | Description                        | Default                                                                    |
+| -------------- | ---------------------------------- | -------------------------------------------------------------------------- |
+| `--mnemonic`   | BIP39 mnemonic words               | required                                                                   |
+| `--network`    | `liquidv1` or `testnet`            | liquidv1                                                                   |
+| `--out` / `-o` | Output JSON file                   | utxos.json                                                                 |
+| `--esplora`    | Esplora API base URL               | [https://blockstream.info/liquid/api](https://blockstream.info/liquid/api) |
+| `--delay-ms`   | Min milliseconds between API calls | 100                                                                        |
 
-#### Example
+The output JSON conforms to **schema v2 (`ssutxos-2`)** and includes both spent and unspent UTXOs.
+
+---
+
+### Compare Snapshots
 
 ```bash
-ssutxos list --mnemonic "abandon abandon abandon ..." --network testnet
+ssutxos compare utxosA.json utxosB.json \
+                --esplora https://blockstream.info/liquid/api \
+                --delay-ms 120
 ```
 
-This will output UTXOs in a JSON format like:
+**Example output**
+
+```
+Starting from utxos1.json utxos.
+Searching in utxos2.json-derived utxos 0 hops out...
+  new utxos encountered in this round: 12
+  nothing found
+Searching in utxos2.json-derived utxos 1 hops out...
+  new utxos encountered in this round: 37
+  FOUND a utxo: abcd1234...:0
+...
+```
+
+The search continues indefinitely until you press **Ctrl-C**.
+
+---
+
+## JSON Schema v2 (`ssutxos-2`)
 
 ```json
-[
-  {
-    "txid": "abc123...",
-    "vout": 0,
-    "asset": "L-BTC",
-    "amount": 0.1234,
-    "address": "ex1q..."
-  }
-]
+{
+  "schema": "ssutxos-2",
+  "network": "liquidv1",
+  "generated_at": "2025-08-18T00:00:00Z",
+  "wallet": {
+    "source": "mnemonic",
+    "descriptor": null
+  },
+  "utxos": [
+    {
+      "id": "txid:vout",
+      "status": "unspent",
+      "txid": "hex",
+      "vout": 0,
+      "address": "string",
+      "script_pubkey": "hex",
+      "asset": "LBTC",
+      "amount_sat": 12345,
+      "block_height": 1234,
+      "block_time": 1700000000,
+      "spending_txid": null,
+      "spending_block_time": null,
+      "metadata": {}
+    }
+  ]
+}
 ```
 
-Additionally, it saves the UTXOs to a file named `utxos.json`.
-
 ---
 
-## JSON Output
+## Quick Start Example
 
-The CLI saves the list of UTXOs in a file `utxos.json` in the current working directory. Each UTXO contains:
+If you don’t have a mnemonic yet, you can try the `compare` command using two small dummy snapshots:
 
-* `txid`: Transaction ID
-* `vout`: Output index
-* `asset`: Asset type (currently only `L-BTC` handled)
-* `amount`: Amount in L-BTC
-* `address`: Receiving address
+```bash
+# Create example snapshots
+echo '{
+  "schema": "ssutxos-2",
+  "network": "liquidv1",
+  "generated_at": "2025-08-18T00:00:00Z",
+  "wallet": {"source": "example"},
+  "utxos": [{"id": "deadbeef:0", "status": "unspent", "txid": "deadbeef", "vout": 0, "address": null, "asset": "LBTC", "amount_sat": 1000}]
+}' > a.json
 
----
+cp a.json b.json
 
-## Code Structure
-
-* `ssutxos/cli.py` – Main CLI module.
-* `list_utxos` – Command to list UTXOs.
-* `save_json` – Helper function to save UTXOs to JSON.
+# Run compare
+ssutxos compare a.json b.json --esplora https://blockstream.info/liquid/api --delay-ms 200
+```
 
 ---
 
 ## Development
 
-To run the CLI locally:
+Run locally from source:
 
 ```bash
-python -m ssutxos list --mnemonic "your mnemonic" --network testnet
+python -m ssutxos --help
 ```
 
----
+Run tests:
 
-## Notes
-
-* Ensure you have a working connection to a Liquid Electrum server.
-* Currently, only L-BTC (Liquid Bitcoin) UTXOs are supported for balance calculation.
-* Mnemonic is required for listing UTXOs; no wallet file support yet.
+```bash
+pytest -q
+```
 
 ---
 
@@ -121,4 +172,3 @@ python -m ssutxos list --mnemonic "your mnemonic" --network testnet
 
 MIT License © 2025
 
----

@@ -8,11 +8,11 @@ version = "0.1.0"
 description = "A CLI tool to inspect SideSwap UTXOs"
 authors = [{ name = "Lucky", email = "lucky.bear.dev@gmail.com" }]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "requests>=2.31",
     # add other dependencies here
 ]
 
 [project.scripts]
-ssutxos = "ssutxos.cli:main"
+ssutxos = "ssutxos.cli:app_entry"
