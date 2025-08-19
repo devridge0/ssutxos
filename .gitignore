@@ -1,0 +1,7 @@
+/venv
+/lwk-venv
+/ssutxos.egg-info
+/build
+/dist
+__pycache__
+mnemonic.txt
