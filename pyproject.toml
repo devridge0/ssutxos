@@ -1,18 +1,26 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ssutxos"
-version = "0.1.0"
-description = "A CLI tool to inspect SideSwap UTXOs"
-authors = [{ name = "Lucky", email = "lucky.bear.dev@gmail.com" }]
+version = "1.0.0"
+description = "A CLI tool to inspect and compare SideSwap UTXOs on Liquid."
 readme = "README.md"
-requires-python = ">=3.12"
+authors = [
+    { name = "Lucky", email = "lucky.bear.dev@gmail.com" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.8"
+
 dependencies = [
+    "typer>=0.9",
     "requests>=2.31",
-    # add other dependencies here
 ]
 
 [project.scripts]
-ssutxos = "ssutxos.cli:main"
+ssutxos = "ssutxos.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ssutxos*"]
