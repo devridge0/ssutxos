@@ -62,7 +62,7 @@ ssutxos list --mnemonic "your twelve or twenty-four word mnemonic" --network mai
 #### Example
 
 ```bash
-ssutxos list --mnemonic "abandon abandon abandon ..." --network testnet
+ssutxos list --mnemonic/-mn "abandon abandon abandon ..." --network testnet --output/-o utxos.json
 ```
 
 This will output UTXOs in a JSON format like:
