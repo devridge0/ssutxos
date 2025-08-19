@@ -6,6 +6,8 @@ import typer
 from lwk import Network, Mnemonic, Signer, Wollet, Chain
 from ssutxos import __app_name__, __version__
 
+from . import compare, enrich
+
 app = typer.Typer()
 
 # ---------------------------
@@ -39,6 +41,10 @@ def main(
     )
 ) -> None:
     pass
+
+# Add subcommands from modules
+app.add_typer(compare.app, name="compare")
+app.add_typer(enrich.app, name="enrich")
 
 # ---------------------------
 # Helper: Save JSON
@@ -105,3 +111,9 @@ def list_utxos(
 
     save_json(output, output_file)
     typer.echo(f"✅ Total UTXOs extracted: {len(utxos)}")
+
+def run():
+    app()
+
+def main():
+    app()
