@@ -1,20 +1,21 @@
-
 # A CLI tool to inspect SideSwap UTXOs
 
-`ssutxos` is a Python command-line interface (CLI) tool for interacting with Liquid wallets. 
-It allows users to list UTXOs (unspent transaction outputs) for a wallet derived from a BIP39 mnemonic and optionally save them in JSON format.
+`ssutxos` is a Python command-line interface (CLI) tool for interacting with Liquid wallets.
+It allows users to list UTXOs (unspent transaction outputs) for a wallet derived from a BIP39 mnemonic, save them in JSON format, and compare different UTXO sets by exploring transaction descendants via the Blockstream Esplora API.
 
+---
 
-## Features
+## ✨ Features
 
 * Display the version of the CLI.
 * List Liquid UTXOs for a wallet from a mnemonic.
 * Support for both `mainnet` and `testnet` Liquid networks.
 * Save UTXOs as a JSON file for further processing.
+* Compare two UTXO sets and trace descendant relationships via transaction graph traversal.
 
 ---
 
-## Installation
+## 📦 Installation
 
 ```bash
 git clone https://github.com/devridge0/ssutxos.git
@@ -28,7 +29,7 @@ pip install .
 
 ---
 
-## Usage
+## 🚀 Usage
 
 ### Show Version
 
@@ -36,11 +37,13 @@ pip install .
 ssutxos --version
 ```
 
-Output example:
+Output:
 
 ```
 ssutxos v1.0.0
 ```
+
+---
 
 ### List UTXOs
 
@@ -79,46 +82,74 @@ Additionally, it saves the UTXOs to a file named `utxos.json`.
 
 ---
 
-## JSON Output
+### Compare Two UTXO Sets
 
-The CLI saves the list of UTXOs in a file `utxos.json` in the current working directory. Each UTXO contains:
-
-* `txid`: Transaction ID
-* `vout`: Output index
-* `asset`: Asset type (currently only `L-BTC` handled)
-* `amount`: Amount in L-BTC
-* `address`: Receiving address
-
----
-
-## Code Structure
-
-* `ssutxos/cli.py` – Main CLI module.
-* `list_utxos` – Command to list UTXOs.
-* `save_json` – Helper function to save UTXOs to JSON.
-
----
-
-## Development
-
-To run the CLI locally:
+You can compare UTXOs from two JSON files.
 
 ```bash
-python -m ssutxos list --mnemonic "your mnemonic" --network testnet
+ssutxos compare run utxos1.json utxos2.json --sleep-ms 100
+```
+
+* **utxos1.json** → the target UTXOs
+* **utxos2.json** → starting UTXOs (the exploration frontier)
+* `--sleep-ms` → delay between API requests (default: 100 ms, helps avoid rate limits)
+
+#### Supported JSON Formats
+
+Both wrapped and flat formats are accepted:
+
+**Wrapped**
+
+```json
+{
+  "utxos": [
+    { "txid": "abc123...", "vout": 0, "asset": "L-BTC", "amount": 0.0001, "address": "lq1..." }
+  ]
+}
+```
+
+**Flat**
+
+```json
+[
+  { "txid": "abc123...", "vout": 0, "asset": "L-BTC", "amount": 0.0001, "address": "lq1..." }
+]
+```
+
+#### Example Run
+
+```
+Starting from utxos1.json utxos.
+Searching in utxos2.json-derived descendants.
+Targets: 2; Start frontier: 2
+API base: https://blockstream.info/liquid/api; sleep: 100 ms
+Searching hop 0: new frontier size 2
+Searching hop 1: new frontier size 5
+FOUND a match at hop 2: Outpoint(txid=abc123..., vout=1)
+Stopped by user. Total matches found: 1
 ```
 
 ---
 
-## Notes
+## 🗂 Code Structure
 
-* Ensure you have a working connection to a Liquid Electrum server.
-* Currently, only L-BTC (Liquid Bitcoin) UTXOs are supported for balance calculation.
-* Mnemonic is required for listing UTXOs; no wallet file support yet.
+* `ssutxos/cli.py` – Main CLI entrypoint.
+* `ssutxos/explorer.py` – Esplora API client.
+* `ssutxos/graph.py` – Graph utilities (outpoints, BFS traversal).
+* `ssutxos/compare.py` – Compare UTXO sets via graph traversal.
+* `ssutxos/enrich.py` – UTXO enrichment helpers.
+* `ssutxos/utils.py` – JSON and helper utilities.
 
 ---
 
-## License
+## ⚠️ Notes
+
+* Ensure you have internet access to query the Blockstream Esplora Liquid API (`https://blockstream.info/liquid/api`).
+* Exploration runs until you **press Ctrl-C**. Large graphs may consume significant resources.
+* Only L-BTC (Liquid Bitcoin) is supported for balance calculation.
+
+---
+
+## 📜 License
 
 MIT License © 2025
-
----
