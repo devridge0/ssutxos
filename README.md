@@ -57,6 +57,7 @@ ssutxos list --mnemonic "your twelve or twenty-four word mnemonic" --network mai
 | -------------------- | -------------------------------------- | ------- |
 | `--mnemonic` / `-mn` | BIP39 mnemonic (12 or 24 words)        | None    |
 | `--network`          | Liquid network: `mainnet` or `testnet` | mainnet |
+| `--output`   / `-o`  | Output JSON file                       | utxos.json| 
 
 #### Example
 
