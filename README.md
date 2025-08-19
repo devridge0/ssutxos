@@ -24,7 +24,7 @@ python -m venv lwk-venv
 source lwk-venv/bin/activate
 pip install -r requirements.txt
 
-pip install .
+pip install -e .
 ```
 
 ---
